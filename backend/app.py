@@ -1,3 +1,4 @@
+from typing import List
 from fastapi import FastAPI, Depends
 from sqlalchemy import create_engine, Column, Integer, String, DateTime
 from sqlalchemy.orm import sessionmaker, declarative_base, Session
@@ -11,6 +12,7 @@ load_dotenv()
 
 DATABASE_URL = os.getenv("DATABASE_URL")
 
+# Configuração do banco
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
@@ -29,12 +31,22 @@ class Capsule(Base):
 # Cria as tabelas no banco
 Base.metadata.create_all(bind=engine)
 
-# Schema Pydantic
+# Schemas Pydantic
 class CapsuleCreate(BaseModel):
     name: str
     email: EmailStr
     send_date: datetime
     message: str
+
+class CapsuleOut(BaseModel):
+    id: int
+    name: str
+    email: str
+    send_date: datetime
+    message: str
+
+    class Config:
+        orm_mode = True
 
 # Dependência para obter sessão do banco
 def get_db():
@@ -44,11 +56,12 @@ def get_db():
     finally:
         db.close()
 
+# Endpoints
 @app.get("/")
 def read_root():
     return {"msg": "API da cápsula do tempo está rodando!"}
 
-@app.post("/capsule/")
+@app.post("/capsule/", response_model=CapsuleOut)
 def create_capsule(capsule: CapsuleCreate, db: Session = Depends(get_db)):
     db_capsule = Capsule(
         name=capsule.name,
@@ -59,4 +72,9 @@ def create_capsule(capsule: CapsuleCreate, db: Session = Depends(get_db)):
     db.add(db_capsule)
     db.commit()
     db.refresh(db_capsule)
-    return {"id": db_capsule.id, "status": "Capsule created!"}
+    return db_capsule
+
+@app.get("/capsule/", response_model=List[CapsuleOut])
+def list_capsules(db: Session = Depends(get_db)):
+    capsules = db.query(Capsule).all()
+    return capsules

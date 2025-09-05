@@ -6,7 +6,7 @@ services:
     container_name: time-capsule-db
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_PASSWORD: 26Itapeva
       POSTGRES_DB: timecapsule
     ports:
       - "5433:5432"
@@ -20,7 +20,7 @@ services:
       - db
     ports:
       - "8000:8000"
-    # volumes:   # <--- NÃO USE VOLUME AQUI!
+    restart: on-failure
 
   frontend:
     build: ./frontend
@@ -29,3 +29,4 @@ services:
       - backend
     ports:
       - "8501:8501"
+    restart: on-failure

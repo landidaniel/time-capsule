@@ -25,6 +25,8 @@ class Capsule(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, nullable=False)
     email = Column(String, nullable=False)
+    recipient_name = Column(String, nullable=False)
+    recipient_email = Column(String, nullable=False)
     send_date = Column(DateTime, nullable=False)
     message = Column(String, nullable=False)
 
@@ -35,6 +37,8 @@ Base.metadata.create_all(bind=engine)
 class CapsuleCreate(BaseModel):
     name: str
     email: EmailStr
+    recipient_name: str
+    recipient_email: EmailStr
     send_date: datetime
     message: str
 
@@ -42,6 +46,8 @@ class CapsuleOut(BaseModel):
     id: int
     name: str
     email: str
+    recipient_name: str
+    recipient_email: str
     send_date: datetime
     message: str
 
@@ -66,6 +72,8 @@ def create_capsule(capsule: CapsuleCreate, db: Session = Depends(get_db)):
     db_capsule = Capsule(
         name=capsule.name,
         email=capsule.email,
+        recipient_name=capsule.recipient_name,
+        recipient_email=capsule.recipient_email,
         send_date=capsule.send_date,
         message=capsule.message
     )
@@ -76,5 +84,4 @@ def create_capsule(capsule: CapsuleCreate, db: Session = Depends(get_db)):
 
 @app.get("/capsule/", response_model=List[CapsuleOut])
 def list_capsules(db: Session = Depends(get_db)):
-    capsules = db.query(Capsule).all()
-    return capsules
+    return db.query(Capsule).all()

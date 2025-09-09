@@ -1,0 +1,41 @@
+version: "3.9"
+
+services:
+  # 🔹 Banco de dados PostgreSQL
+  db:
+    image: postgres:16
+    container_name: time-capsule-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 26Itapeva
+      POSTGRES_DB: timecapsule
+    ports:
+      - "5433:5432"   # Expondo 5433 no host -> 5432 no container
+    volumes:
+      - ./database:/database   # pasta local ./database mapeada
+      - db_data:/var/lib/postgresql/data
+
+  # 🔹 Backend FastAPI
+  backend:
+    build: ./backend
+    container_name: time-capsule-backend
+    env_file:
+      - ./backend/.env
+    depends_on:
+      - db
+    ports:
+      - "8000:8000"
+    restart: on-failure
+
+  # 🔹 Frontend Streamlit
+  frontend:
+    build: ./frontend
+    container_name: time-capsule-frontend
+    depends_on:
+      - backend
+    ports:
+      - "8501:8501"
+    restart: on-failure
+
+volumes:
+  db_data:

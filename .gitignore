@@ -39,5 +39,5 @@ Thumbs.db
 
 backend/test_email.py
 backend/wait-for-db.sh
-docker-compose.override.yml
+docker-compose.yml
 backend/email_service.py
